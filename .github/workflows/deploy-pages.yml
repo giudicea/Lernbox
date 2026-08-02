@@ -1,3 +1,4 @@
+# Publishes site/ to GitHub Pages. Requires Settings > Pages > Source = "GitHub Actions".
 name: Deploy Elektro-Toolbox to GitHub Pages
 
 on:
