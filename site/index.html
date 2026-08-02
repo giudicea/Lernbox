@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elektro-Toolbox</title>
+<meta name="description" content="Kabelquerschnitt, Magnetismus, Beleuchtung und Formelsammlung für Elektriker — nach Schweizer Normen (NIN / SN 411000).">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+
+  <nav class="nav">
+    <span class="nav-brand" style="display:flex;align-items:center;gap:10px">
+      <svg width="20" height="20" viewBox="0 0 256 256" fill="var(--color-accent)"><path d="M244,132a12,12,0,0,1-12,12H221.1a52.06,52.06,0,0,1-102.2,0H24a12,12,0,0,1,0-24H118.9a52.06,52.06,0,0,1,102.2,0H232A12,12,0,0,1,244,132Zm-74,28a28,28,0,1,0-28-28A28,28,0,0,0,170,160Z"></path></svg>
+      Elektro-Toolbox
+    </span>
+    <span class="text-muted" id="toolSub" style="font-size:12px;margin-left:auto"></span>
+  </nav>
+
+  <div class="menu-flyout">
+    <div class="card elev-lg menu-panel hidden" id="menuPanel">
+      <button class="btn btn-ghost menu-item" data-pick="kabel"><span class="mark" data-mark="kabel"></span> Kabelquerschnitt</button>
+      <button class="btn btn-ghost menu-item" data-pick="magnet"><span class="mark" data-mark="magnet"></span> Magnetismus</button>
+      <button class="btn btn-ghost menu-item" data-pick="licht"><span class="mark" data-mark="licht"></span> Beleuchtung</button>
+      <button class="btn btn-ghost menu-item" data-pick="formeln"><span class="mark" data-mark="formeln"></span> Formelsammlung</button>
+    </div>
+    <button class="btn btn-secondary elev-md menu-toggle" id="menuToggle">
+      <span id="toolName"></span>
+      <svg width="12" height="12" viewBox="0 0 256 256" fill="currentColor"><path d="M42.34,154.34l80-80a8,8,0,0,1,11.32,0l80,80a8,8,0,0,1-11.32,11.32L128,91.31,53.66,165.66a8,8,0,0,1-11.32-11.32Z"></path></svg>
+    </button>
+  </div>
+
+  <!-- ═══════════════════ Kabelquerschnitt ═══════════════════ -->
+  <main class="app-main" id="tool-kabel">
+    <section class="card elev-sm" style="gap:16px;padding:20px">
+      <h5 style="margin:0">Eingaben</h5>
+      <div class="field"><label>Netz</label>
+        <div class="seg" style="display:flex">
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="netz" id="netz-3ph" value="3ph">400&nbsp;V&nbsp;3~</label>
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="netz" id="netz-1ph" value="1ph">230&nbsp;V&nbsp;1~</label>
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="netz" id="netz-dc" value="dc">DC</label>
+        </div>
+      </div>
+      <div class="field hidden" id="dcU-field"><label>Gleichspannung</label>
+        <select class="input" id="dcU">
+          <option value="12">12 V</option><option value="24">24 V</option><option value="48">48 V</option>
+        </select>
+      </div>
+      <div class="field"><label>Vorgabe</label>
+        <div class="seg" style="display:flex">
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="mode" id="mode-p" value="P">Leistung</label>
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="mode" id="mode-i" value="I">Strom</label>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label id="wertLabel">Leistung (W)</label>
+          <input class="input" type="number" min="0" step="any" id="wert">
+        </div>
+        <div class="field" id="cosphi-field"><label>cos φ</label>
+          <input class="input" type="number" min="0.1" max="1" step="0.05" id="cosphi">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Leitungslänge (einfach)</label>
+          <input class="input" type="number" min="0" step="any" id="laenge">
+        </div>
+        <div class="field"><label>Max. Spannungsfall %</label>
+          <input class="input" type="number" min="0.5" max="10" step="0.5" id="maxDrop">
+        </div>
+      </div>
+      <div class="field"><label>Leitermaterial</label>
+        <div class="seg" style="display:flex">
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="mat" id="mat-cu" value="cu">Kupfer</label>
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="mat" id="mat-al" value="al">Aluminium</label>
+        </div>
+      </div>
+      <div class="field"><label>Absicherung I<sub>N</sub></label>
+        <select class="input" id="fuseSel">
+          <option value="auto">Automatisch (nächste Normgrösse)</option>
+          <option value="6">6 A</option><option value="10">10 A</option><option value="13">13 A</option>
+          <option value="16">16 A</option><option value="20">20 A</option><option value="25">25 A</option>
+          <option value="32">32 A</option><option value="40">40 A</option><option value="50">50 A</option>
+          <option value="63">63 A</option><option value="80">80 A</option><option value="100">100 A</option>
+          <option value="125">125 A</option><option value="160">160 A</option><option value="200">200 A</option>
+          <option value="250">250 A</option><option value="315">315 A</option><option value="400">400 A</option>
+        </select>
+        <span style="font-size:12px;color:var(--color-accent-200)" class="hidden" id="fuseWarn">⚠ <span id="fuseWarnText"></span></span>
+      </div>
+      <div class="field"><label>Verlegeart (NIN / IEC 60364-5-52)</label>
+        <select class="input" id="verlegeart">
+          <option value="A1">A1 — Einzeladern im Rohr in wärmegedämmter Wand</option>
+          <option value="A2">A2 — Kabel im Rohr in wärmegedämmter Wand</option>
+          <option value="B1">B1 — Einzeladern im Rohr auf/in der Wand</option>
+          <option value="B2">B2 — Kabel im Rohr auf/in der Wand</option>
+          <option value="C">C — Kabel direkt auf der Wand</option>
+          <option value="D1">D1 — Kabel im Rohr im Erdreich</option>
+          <option value="D2">D2 — Kabel direkt im Erdreich verlegt</option>
+          <option value="E">E — Kabel frei in Luft / Kabeltrasse</option>
+          <option value="F">F — Einzeladern frei in Luft (berührend)</option>
+        </select>
+      </div>
+      <p class="text-muted" style="font-size:11px;margin:0">Richtwerte: PVC-isoliert, 30 °C Umgebung, ohne Häufung. Für die Ausführung gilt die NIN — Bemessung durch Fachperson prüfen.</p>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:16px">
+      <div id="kabel-result">
+        <div class="card elev-md" style="padding:24px;gap:4px">
+          <span class="card-kicker">Empfohlener Querschnitt</span>
+          <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap">
+            <span style="font-family:var(--font-heading);font-weight:500;font-size:56px;line-height:1;letter-spacing:-0.02em" id="qsText"></span>
+            <span class="tag tag-accent" id="limitierend"></span>
+          </div>
+          <span class="text-muted" style="font-size:13px" id="qsSub"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px">
+          <div class="card elev-sm" style="gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Betriebsstrom I<sub>B</sub></span><span style="font-size:24px;font-family:var(--font-heading)" id="ibText"></span></div>
+          <div class="card elev-sm" style="gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Absicherung I<sub>N</sub></span><span style="font-size:24px;font-family:var(--font-heading)" id="fuseText"></span></div>
+          <div class="card elev-sm" style="gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Spannungsfall</span><span style="font-size:24px;font-family:var(--font-heading)" id="dropText"></span><span class="text-muted" style="font-size:11px" id="dropVText"></span></div>
+          <div class="card elev-sm" style="gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Verlustleistung</span><span style="font-size:24px;font-family:var(--font-heading)" id="lossText"></span><span class="text-muted" style="font-size:11px">bei Volllast</span></div>
+        </div>
+        <div class="card elev-sm" style="padding:16px;gap:8px;margin-top:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+            <div><span class="text-muted">Strombelastbarkeit:</span> min. <span id="minAmpText"></span></div>
+            <div><span class="text-muted">Spannungsfall ≤ <span id="maxDropEcho"></span> %:</span> min. <span id="minDropText"></span></div>
+          </div>
+          <div style="font-size:13px"><span class="text-muted">Belastbarkeit I<sub>Z</sub> des gewählten Querschnitts:</span> <span id="izText"></span> — Bedingung I<sub>B</sub> ≤ I<sub>N</sub> ≤ I<sub>Z</sub> <span id="bedingungText"></span></div>
+        </div>
+        <div class="card elev-sm" style="padding:16px;gap:8px;margin-top:16px">
+          <h6 style="margin:0;color:var(--color-neutral-500)">Vergleich Normquerschnitte</h6>
+          <table class="table">
+            <thead><tr><th>Querschnitt</th><th>I<sub>Z</sub></th><th>ΔU</th><th>ΔU %</th><th>Verlust</th><th>Status</th></tr></thead>
+            <tbody id="kabel-rows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card elev-sm hidden" style="padding:32px;align-items:center;text-align:center;gap:8px" id="kabel-empty">
+        <span class="card-kicker">Keine Berechnung</span>
+        <span class="text-muted" style="font-size:14px" id="kabel-emptyMsg"></span>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════ Magnetismus ═══════════════════ -->
+  <main class="app-main hidden" id="tool-magnet">
+    <section class="card elev-sm" style="gap:16px;padding:20px">
+      <h5 style="margin:0">Eingaben</h5>
+      <div class="field"><label>Gegebene Grösse</label>
+        <div class="seg" style="display:flex">
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="given" id="given-i" value="I">Strom I</label>
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="given" id="given-h" value="H">Feldstärke H</label>
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="given" id="given-b" value="B">Flussdichte B</label>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Windungszahl N</label>
+          <input class="input" type="number" min="1" step="1" id="N">
+        </div>
+        <div class="field"><label id="givenLabel">Strom I (mA)</label>
+          <input class="input" type="number" min="0" step="any" id="givenVal">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Feldlinienlänge l (cm)</label>
+          <input class="input" type="number" min="0" step="any" id="len">
+        </div>
+        <div class="field"><label>Kernfläche A (cm²)</label>
+          <input class="input" type="number" min="0" step="any" id="area">
+        </div>
+      </div>
+      <div class="field"><label>Permeabilitätszahl μ<sub>r</sub></label>
+        <select class="input" id="mur">
+          <option value="1">1 — Luft / Vakuum</option>
+          <option value="300">300 — Gusseisen</option>
+          <option value="2000">2000 — Dynamoblech</option>
+          <option value="5000">5000 — Trafoblech</option>
+          <option value="100000">100 000 — Mu-Metall</option>
+          <option value="custom">Eigener Wert …</option>
+        </select>
+        <input class="input hidden" type="number" min="1" step="any" placeholder="μr eingeben" id="murCustom" style="margin-top:8px">
+      </div>
+      <div class="hr" style="margin:4px 0"></div>
+      <h6 style="margin:0;color:var(--color-neutral-500)">Spulendraht (optional)</h6>
+      <div class="field"><label>Drahtmaterial</label>
+        <div class="seg" style="display:flex">
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="wmat" id="wmat-cu" value="cu">Kupfer</label>
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="wmat" id="wmat-al" value="al">Aluminium</label>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Spannung U (V)</label>
+          <input class="input" type="number" min="0" step="any" id="u">
+        </div>
+        <div class="field"><label>Draht A (mm²)</label>
+          <input class="input" type="number" min="0" step="any" id="wireA">
+        </div>
+      </div>
+      <p class="text-muted" style="font-size:11px;margin:0">Drahtlänge aus R = U / I und l = R · γ · A (<span id="wmatText"></span>).</p>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:16px">
+      <div id="magnet-result">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+          <div class="card elev-md" style="gap:2px;padding:20px">
+            <span class="card-kicker">Durchflutung Θ</span>
+            <span style="font-size:34px;font-family:var(--font-heading)" id="thetaText"></span>
+            <span class="text-muted" style="font-size:12px">Θ = N · I</span>
+          </div>
+          <div class="card elev-md" style="gap:2px;padding:20px">
+            <span class="card-kicker">Strom I</span>
+            <span style="font-size:34px;font-family:var(--font-heading)" id="iText"></span>
+            <span class="text-muted" style="font-size:12px">I = Θ / N</span>
+          </div>
+          <div class="card elev-sm" style="gap:2px;padding:20px">
+            <span class="card-kicker">Feldstärke H</span>
+            <span style="font-size:34px;font-family:var(--font-heading)" id="hText"></span>
+            <span class="text-muted" style="font-size:12px">H = Θ / l &nbsp;·&nbsp; <span id="hCmText"></span></span>
+          </div>
+          <div class="card elev-sm" style="gap:2px;padding:20px">
+            <span class="card-kicker">Flussdichte B</span>
+            <span style="font-size:34px;font-family:var(--font-heading)" id="bText"></span>
+            <span class="text-muted" style="font-size:12px">B = μ₀ · μᵣ · H</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px">
+          <div class="card elev-sm" style="gap:2px;padding:20px">
+            <span class="card-kicker">Magnetischer Fluss Φ</span>
+            <span style="font-size:28px;font-family:var(--font-heading)" id="fluxText"></span>
+            <span class="text-muted" style="font-size:12px">Φ = B · A</span>
+          </div>
+          <div class="card elev-sm" style="gap:2px;padding:20px">
+            <span class="card-kicker">Drahtlänge (<span id="wmatShort"></span>)</span>
+            <span style="font-size:28px;font-family:var(--font-heading)" id="wireText"></span>
+            <span class="text-muted" style="font-size:12px" id="wireSub"></span>
+          </div>
+        </div>
+      </div>
+      <div class="card elev-sm hidden" style="padding:32px;align-items:center;text-align:center;gap:8px" id="magnet-empty">
+        <span class="card-kicker">Keine Berechnung</span>
+        <span class="text-muted" style="font-size:14px">Bitte Windungszahl, Feldlinienlänge und die gegebene Grösse eingeben.</span>
+      </div>
+      <div class="card elev-sm" style="padding:16px;gap:10px">
+        <h6 style="margin:0;color:var(--color-neutral-500)">Begriffe</h6>
+        <table class="table">
+          <thead><tr><th>Grösse</th><th>Zeichen</th><th>Einheit</th><th>Bedeutung</th></tr></thead>
+          <tbody>
+            <tr><td>Magnetischer Fluss</td><td>Φ</td><td>Wb (Vs)</td><td>Gesamtheit aller Feldlinien durch eine Fläche</td></tr>
+            <tr><td>Durchflutung</td><td>Θ</td><td>A</td><td>Erregende «magnetische Spannung»: Strom × Windungen</td></tr>
+            <tr><td>Feldstärke</td><td>H</td><td>A/m</td><td>Durchflutung bezogen auf die Feldlinienlänge</td></tr>
+            <tr><td>Flussdichte</td><td>B</td><td>T (Vs/m²)</td><td>Fluss pro Fläche — Stärke des Feldes im Material</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════ Beleuchtung ═══════════════════ -->
+  <main class="app-main hidden" id="tool-licht">
+    <section class="card elev-sm" style="gap:16px;padding:20px">
+      <h5 style="margin:0">Eingaben</h5>
+      <div class="field"><label>Raumnutzung (Ē<sub>m</sub> nach EN 12464-1)</label>
+        <select class="input" id="raumtyp"></select>
+        <input class="input hidden" type="number" min="0" step="any" placeholder="Ziel-Beleuchtungsstärke Ē (lx)" id="raumtypCustomE" style="margin-top:8px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Raumfläche A (m²)</label><input class="input" type="number" min="0" step="any" id="lichtA"></div>
+        <div class="field"><label>Lichtstrom je Leuchte Φ<sub>L</sub> (lm)</label><input class="input" type="number" min="0" step="any" id="lichtPhiL"></div>
+      </div>
+      <div class="field"><label>Vorhandene Leuchten (optional)</label>
+        <input class="input" type="number" min="0" step="1" id="lichtNvorh">
+      </div>
+      <div class="field"><label>Beleuchtungswirkungsgrad η<sub>B</sub></label>
+        <select class="input" id="etaB"></select>
+        <input class="input hidden" type="number" min="0.01" max="1" step="0.01" placeholder="ηB eingeben" id="etaBCustom" style="margin-top:8px">
+      </div>
+      <div class="field"><label>Wartungsfaktor WF (Sauberkeit)</label>
+        <select class="input" id="wf"></select>
+        <input class="input hidden" type="number" min="0.01" max="1" step="0.01" placeholder="WF eingeben" id="wfCustom" style="margin-top:8px">
+      </div>
+      <p class="text-muted" style="font-size:11px;margin:0">E = (Φ<sub>L</sub> · N · η<sub>B</sub> · WF) / A — Richtwerte nach EN 12464-1, im Einzelfall prüfen.</p>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:16px">
+      <div id="licht-result">
+        <div class="card elev-md" style="padding:24px;gap:4px">
+          <span class="card-kicker">Erforderliche Anzahl Leuchten</span>
+          <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap">
+            <span style="font-family:var(--font-heading);font-weight:500;font-size:56px;line-height:1;letter-spacing:-0.02em" id="lNText"></span>
+            <span class="tag tag-accent">Ziel Ē: <span id="lEText"></span></span>
+          </div>
+          <span class="text-muted" style="font-size:13px" id="lSub"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px">
+          <div class="card elev-sm" style="gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Erf. Gesamtlichtstrom</span><span style="font-size:22px;font-family:var(--font-heading)" id="lPhiGesamtText"></span></div>
+          <div class="card elev-sm" style="gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Vorhandene Leuchten</span><span style="font-size:22px;font-family:var(--font-heading)" id="lNvorhText"></span></div>
+          <div class="card elev-sm" style="gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Zusätzliche Leuchten nötig</span><span style="font-size:22px;font-family:var(--font-heading)" id="lZusatzText"></span></div>
+        </div>
+        <div class="card elev-sm hidden" style="padding:16px;gap:6px;margin-top:16px" id="licht-bewertung">
+          <h6 style="margin:0;color:var(--color-neutral-500)">Bewertung</h6>
+          <div style="font-size:14px">Erreichte Beleuchtungsstärke Ē: <strong id="lEErreichtText"></strong> — Sollwert <span id="lEText2"></span> <span class="tag" id="lBewertungTag"><span id="lBewertungText"></span></span></div>
+        </div>
+      </div>
+      <div class="card elev-sm hidden" style="padding:32px;align-items:center;text-align:center;gap:8px" id="licht-empty">
+        <span class="card-kicker">Keine Berechnung</span>
+        <span class="text-muted" style="font-size:14px">Bitte Raumnutzung/Ziel-Ē, Raumfläche, Lichtstrom je Leuchte, ηB und WF eingeben.</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════ Formelsammlung ═══════════════════ -->
+  <main class="app-main formeln hidden" id="tool-formeln">
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+    <div class="field" style="max-width:360px"><label>Thema wählen</label>
+      <select class="input" id="formelTopic">
+        <option value="alle">Alle Themen</option>
+        <option value="waerme">Wärmemenge / Wärmepumpe</option>
+        <option value="innenwiderstand">Innenwiderstand einer Quelle</option>
+        <option value="pumpe">Pumpleistung / Wirkungsgrad</option>
+        <option value="energie">Elektrische Arbeit / Energiekosten</option>
+        <option value="kabel">Leitungsquerschnitt / Spannungsfall</option>
+        <option value="temperatur">Temperaturabhängiger Widerstand</option>
+        <option value="trigonometrie">Trigonometrie</option>
+      </select>
+    </div>
+
+    <section class="card elev-sm" style="padding:20px;gap:12px" id="show-waerme">
+      <span class="card-kicker">Wärmemenge / Wärmepumpe</span>
+      <table class="table">
+        <thead><tr><th>Grösse</th><th>Formel</th><th>Einheit</th></tr></thead>
+        <tbody>
+          <tr><td>Wärmemenge</td><td>Q = m · c · ΔT</td><td>J (Ws)</td></tr>
+          <tr><td>Masse aus Volumen</td><td>m = V · ρ &nbsp;(ρ<sub>Wasser</sub> ≈ 1 kg/l)</td><td>kg</td></tr>
+          <tr><td>spez. Wärmekapazität Wasser</td><td>c = 4187</td><td>J/(kg·K)</td></tr>
+        </tbody>
+      </table>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div class="field"><label>Volumen V (l)</label><input class="input" type="number" step="any" id="q_v"></div>
+        <div class="field"><label>T Anfang (°C)</label><input class="input" type="number" step="any" id="q_t1"></div>
+        <div class="field"><label>T Ende (°C)</label><input class="input" type="number" step="any" id="q_t2"></div>
+      </div>
+      <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Wärmemenge Q</span><span style="font-size:22px;font-family:var(--font-heading)" id="q_result"></span></div>
+    </section>
+
+    <section class="card elev-sm" style="padding:20px;gap:12px" id="show-innenwiderstand">
+      <span class="card-kicker">Innenwiderstand einer Quelle</span>
+      <table class="table">
+        <thead><tr><th>Grösse</th><th>Formel</th><th>Einheit</th></tr></thead>
+        <tbody>
+          <tr><td>Innenwiderstand</td><td>R<sub>i</sub> = (U<sub>0</sub> − U<sub>Klemme</sub>) / I</td><td>Ω</td></tr>
+        </tbody>
+      </table>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div class="field"><label>U₀ Leerlauf (V)</label><input class="input" type="number" step="any" id="ri_u0"></div>
+        <div class="field"><label>U Klemme (V)</label><input class="input" type="number" step="any" id="ri_uk"></div>
+        <div class="field"><label>Strom I (A)</label><input class="input" type="number" step="any" id="ri_i"></div>
+      </div>
+      <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Innenwiderstand Rᵢ</span><span style="font-size:22px;font-family:var(--font-heading)" id="ri_result"></span></div>
+    </section>
+
+    <section class="card elev-sm" style="padding:20px;gap:12px" id="show-pumpe">
+      <span class="card-kicker">Pumpleistung / Wirkungsgrad</span>
+      <table class="table">
+        <thead><tr><th>Grösse</th><th>Formel</th><th>Einheit</th></tr></thead>
+        <tbody>
+          <tr><td>Hydraulische Leistung</td><td>P<sub>hydr</sub> = ρ · V · g · h / t</td><td>W</td></tr>
+          <tr><td>Nennleistung Motor</td><td>P<sub>zu</sub> = P<sub>hydr</sub> / η</td><td>W</td></tr>
+        </tbody>
+      </table>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div class="field"><label>Volumenstrom (l/min)</label><input class="input" type="number" step="any" id="p_v"></div>
+        <div class="field"><label>Höhe h (m)</label><input class="input" type="number" step="any" id="p_h"></div>
+        <div class="field"><label>Zeit (min, meist 1)</label><input class="input" type="number" step="any" id="p_t"></div>
+        <div class="field"><label>Wirkungsgrad η (%)</label><input class="input" type="number" step="any" id="p_eta"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Hydraulische Leistung</span><span style="font-size:22px;font-family:var(--font-heading)" id="p_hydr"></span></div>
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Motor-Nennleistung</span><span style="font-size:22px;font-family:var(--font-heading)" id="p_result"></span></div>
+      </div>
+    </section>
+
+    <section class="card elev-sm" style="padding:20px;gap:12px" id="show-energie">
+      <span class="card-kicker">Elektrische Arbeit / Energiekosten</span>
+      <table class="table">
+        <thead><tr><th>Grösse</th><th>Formel</th><th>Einheit</th></tr></thead>
+        <tbody>
+          <tr><td>Leistung (ohmscher Verbraucher)</td><td>P = U² / R</td><td>W</td></tr>
+          <tr><td>Elektrische Arbeit</td><td>W = P · t</td><td>Wh, kWh</td></tr>
+          <tr><td>Energiekosten</td><td>Kosten = W [kWh] · Preis [Rp./kWh]</td><td>Rp. / CHF</td></tr>
+        </tbody>
+      </table>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div class="field"><label>Spannung U (V)</label><input class="input" type="number" step="any" id="e_u"></div>
+        <div class="field"><label>Widerstand R (Ω)</label><input class="input" type="number" step="any" id="e_r"></div>
+        <div class="field"><label>Dauer (h)</label><input class="input" type="number" step="any" id="e_t"></div>
+        <div class="field"><label>Preis (Rp./kWh)</label><input class="input" type="number" step="any" id="e_price"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Leistung P</span><span style="font-size:22px;font-family:var(--font-heading)" id="e_p"></span></div>
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Arbeit W</span><span style="font-size:22px;font-family:var(--font-heading)" id="e_w"></span></div>
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Kosten</span><span style="font-size:22px;font-family:var(--font-heading)" id="e_cost"></span></div>
+      </div>
+    </section>
+
+    <section class="card elev-sm" style="padding:20px;gap:12px" id="show-kabel">
+      <span class="card-kicker">Leitungsquerschnitt / Spannungsfall</span>
+      <table class="table">
+        <thead><tr><th>Grösse</th><th>Formel</th><th>Einheit</th></tr></thead>
+        <tbody>
+          <tr><td>Querschnitt rechnerisch</td><td>A = 2 · I · l / (γ · ΔU)</td><td>mm²</td></tr>
+          <tr><td>Spannungsfall in %</td><td>ΔU% = ΔU / U · 100</td><td>%</td></tr>
+          <tr><td>Leitfähigkeit Kupfer</td><td>γ = 56</td><td>m/(Ω·mm²)</td></tr>
+        </tbody>
+      </table>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div class="field"><label>Strom I (A)</label><input class="input" type="number" step="any" id="c_i"></div>
+        <div class="field"><label>Länge l (m)</label><input class="input" type="number" step="any" id="c_l"></div>
+        <div class="field"><label>Spannung U (V)</label><input class="input" type="number" step="any" id="c_u"></div>
+        <div class="field"><label>Max. Spannungsfall (%)</label><input class="input" type="number" step="any" id="c_max"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Querschnitt rechnerisch</span><span style="font-size:22px;font-family:var(--font-heading)" id="c_calc"></span></div>
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Normquerschnitt</span><span style="font-size:22px;font-family:var(--font-heading)" id="c_norm"></span></div>
+      </div>
+    </section>
+
+    <section class="card elev-sm" style="padding:20px;gap:12px" id="show-temperatur">
+      <span class="card-kicker">Temperaturabhängiger Widerstand</span>
+      <table class="table">
+        <thead><tr><th>Grösse</th><th>Formel</th><th>Einheit</th></tr></thead>
+        <tbody>
+          <tr><td>Widerstand bei Temperatur ϑ</td><td>R<sub>ϑ</sub> = R<sub>20</sub> · (1 + α · (ϑ − 20°C))</td><td>Ω</td></tr>
+          <tr><td>Temperaturkoeffizient Kupfer</td><td>α = 0,0039</td><td>1/K</td></tr>
+        </tbody>
+      </table>
+      <div class="field"><label>Gesucht</label>
+        <div class="seg" style="display:flex">
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="tgoal" id="tgoal-r" value="R">Rϑ</label>
+          <label class="seg-opt" style="flex:1;justify-content:center"><input type="radio" name="tgoal" id="tgoal-t" value="T">Temperatur ϑ</label>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div class="field"><label>R₂₀ (Ω)</label><input class="input" type="number" step="any" id="t_r20"></div>
+        <div class="field"><label id="t_thirdLabel">Temperatur ϑ (°C)</label><input class="input" type="number" step="any" id="t_third"></div>
+        <div class="field"><label>α (1/K)</label><input class="input" type="number" step="any" id="t_alpha"></div>
+      </div>
+      <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)" id="t_resultLabel">Widerstand Rϑ</span><span style="font-size:22px;font-family:var(--font-heading)" id="t_result"></span></div>
+    </section>
+
+    <section class="card elev-sm" style="padding:20px;gap:12px" id="show-trigonometrie">
+      <span class="card-kicker">Trigonometrie (rechtwinkliges Dreieck)</span>
+      <table class="table">
+        <thead><tr><th>Grösse</th><th>Formel</th><th>Einheit</th></tr></thead>
+        <tbody>
+          <tr><td>Sinus</td><td>sin α = Gegenkathete / Hypotenuse</td><td>–</td></tr>
+          <tr><td>Kosinus</td><td>cos α = Ankathete / Hypotenuse</td><td>–</td></tr>
+          <tr><td>Tangens</td><td>tan α = Gegenkathete / Ankathete</td><td>–</td></tr>
+          <tr><td>Satz des Pythagoras</td><td>c² = a² + b²</td><td>–</td></tr>
+        </tbody>
+      </table>
+      <p class="text-muted" style="font-size:12px;margin:0">Gib die Ankathete a und die Gegenkathete b ein (Winkel β liegt bei b).</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Ankathete a</label><input class="input" type="number" step="any" id="tr_a"></div>
+        <div class="field"><label>Gegenkathete b</label><input class="input" type="number" step="any" id="tr_b"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Hypotenuse c</span><span style="font-size:22px;font-family:var(--font-heading)" id="tr_c"></span></div>
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="card-kicker" style="color:var(--color-neutral-500)">Winkel β</span><span style="font-size:22px;font-family:var(--font-heading)" id="tr_beta"></span></div>
+      </div>
+    </section>
+
+    </div>
+  </main>
+
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
