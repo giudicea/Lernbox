@@ -171,3 +171,33 @@ a:hover { color: var(--color-accent-300); }
   background: var(--color-surface);
 }
 .menu-item { justify-content: flex-start; width: 100%; }
+
+/* — Kraftwerk (Idle-Game) — */
+.app-main.kraftwerk { max-width: 1080px; grid-template-columns: 380px 1fr; }
+@media (max-width: 860px) { .app-main.kraftwerk { grid-template-columns: 1fr; } }
+
+.idle-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+.idle-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.idle-row-title { display: flex; align-items: baseline; gap: 8px; }
+.idle-row-name { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 15px; }
+.idle-row-owned { font-size: 12px; color: var(--color-accent); font-variant-numeric: tabular-nums; }
+.idle-row-sub { font-size: 12px; color: color-mix(in srgb, var(--color-text) 55%, transparent); font-variant-numeric: tabular-nums; }
+.idle-buy-btn {
+  flex: 0 0 auto; min-width: 116px; flex-direction: column; gap: 1px; line-height: 1.15;
+  padding: 8px 12px; border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+  background: var(--color-surface); cursor: pointer; color: var(--color-text);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 13px;
+}
+.idle-buy-btn:hover:not(:disabled) { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.idle-buy-btn:active:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.idle-buy-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.idle-buy-btn .cost { font-size: 12px; color: var(--color-accent-300); font-variant-numeric: tabular-nums; }
+.idle-buy-btn:disabled .cost { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+.idle-locked { opacity: 0.55; filter: grayscale(0.4); }
+.idle-pulse { animation: idle-pulse 0.25s ease; }
+@keyframes idle-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
